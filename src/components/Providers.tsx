@@ -31,6 +31,7 @@ export function Providers({ children }: ProvidersProps) {
           modalSize="compact"
           // Enable mobile wallet support
           showRecentTransactions={true}
+          coolMode={true}
         >
           {children}
         </RainbowKitProvider>

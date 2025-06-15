@@ -1,8 +1,21 @@
 "use client";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import Image from 'next/image'; // Add this import
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 export function WalletConnect() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <ConnectButton.Custom>
       {({
@@ -39,8 +52,13 @@ export function WalletConnect() {
                     onClick={openConnectModal}
                     type="button"
                     className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    // Enhanced mobile support
+                    style={{
+                      minHeight: isMobile ? '44px' : 'auto',
+                      fontSize: isMobile ? '16px' : '14px',
+                    }}
                   >
-                    Connect Wallet
+                    {isMobile ? 'Connect' : 'Connect Wallet'}
                   </button>
                 );
               }
@@ -62,42 +80,30 @@ export function WalletConnect() {
                   <button
                     onClick={openChainModal}
                     className="bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-3 rounded-lg transition-colors flex items-center gap-2"
-                    type="button"
                   >
                     {chain.hasIcon && (
-                      <div
-                        style={{
-                          background: chain.iconBackground,
-                          width: 12,
-                          height: 12,
-                          borderRadius: 999,
-                          overflow: 'hidden',
-                          marginRight: 4,
-                        }}
-                      >
+                      <div className="w-4 h-4">
                         {chain.iconUrl && (
                           <Image
                             alt={chain.name ?? 'Chain icon'}
                             src={chain.iconUrl}
-                            width={12}
-                            height={12}
-                            style={{ width: 12, height: 12 }}
+                            width={16}
+                            height={16}
                           />
                         )}
                       </div>
                     )}
-                    {chain.name}
+                    {isMobile ? chain.name?.slice(0, 8) : chain.name}
                   </button>
 
                   <button
                     onClick={openAccountModal}
-                    type="button"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-lg transition-colors"
                   >
-                    {account.displayName}
-                    {account.displayBalance
-                      ? ` (${account.displayBalance})`
-                      : ""}
+                    {isMobile 
+                      ? `${account.displayName?.slice(0, 6)}...` 
+                      : account.displayName
+                    }
                   </button>
                 </div>
               );
