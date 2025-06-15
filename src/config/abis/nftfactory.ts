@@ -1,7 +1,5 @@
-export const MARKETPLACE_ABI = [
+export const NFTFACTORY_ABI = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },
-  { inputs: [], name: "EnforcedPause", type: "error" },
-  { inputs: [], name: "ExpectedPause", type: "error" },
   {
     inputs: [{ internalType: "address", name: "owner", type: "address" }],
     name: "OwnableInvalidOwner",
@@ -12,7 +10,6 @@ export const MARKETPLACE_ABI = [
     name: "OwnableUnauthorizedAccount",
     type: "error",
   },
-  { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
   {
     anonymous: false,
     inputs: [
@@ -33,23 +30,25 @@ export const MARKETPLACE_ABI = [
       {
         indexed: true,
         internalType: "address",
-        name: "seller",
+        name: "creator",
         type: "address",
       },
       {
         indexed: true,
         internalType: "address",
-        name: "nftContract",
+        name: "contractAddress",
         type: "address",
       },
+      { indexed: false, internalType: "string", name: "name", type: "string" },
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
+        indexed: false,
+        internalType: "string",
+        name: "symbol",
+        type: "string",
       },
+      { indexed: false, internalType: "bool", name: "isERC1155", type: "bool" },
     ],
-    name: "NFTDelisted",
+    name: "CollectionCreated",
     type: "event",
   },
   {
@@ -58,26 +57,13 @@ export const MARKETPLACE_ABI = [
       {
         indexed: true,
         internalType: "address",
-        name: "nftFactory",
-        type: "address",
-      },
-    ],
-    name: "NFTFactoryUpdated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "seller",
+        name: "creator",
         type: "address",
       },
       {
         indexed: true,
         internalType: "address",
-        name: "nftContract",
+        name: "contractAddress",
         type: "address",
       },
       {
@@ -88,61 +74,12 @@ export const MARKETPLACE_ABI = [
       },
       {
         indexed: false,
-        internalType: "uint256",
-        name: "price",
-        type: "uint256",
-      },
-      {
-        indexed: false,
         internalType: "address",
-        name: "paymentToken",
+        name: "recipient",
         type: "address",
       },
     ],
-    name: "NFTListed",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "seller",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "buyer",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "nftContract",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "price",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "paymentToken",
-        type: "address",
-      },
-    ],
-    name: "NFTSold",
+    name: "NFTMinted",
     type: "event",
   },
   {
@@ -169,32 +106,6 @@ export const MARKETPLACE_ABI = [
     inputs: [
       {
         indexed: false,
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
-    name: "Paused",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "newFeePercentage",
-        type: "uint256",
-      },
-    ],
-    name: "PlatformFeeUpdated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
         internalType: "uint256",
         name: "chainId",
         type: "uint256",
@@ -207,19 +118,6 @@ export const MARKETPLACE_ABI = [
       },
     ],
     name: "USDCAddressUpdated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
-    name: "Unpaused",
     type: "event",
   },
   {
@@ -258,35 +156,61 @@ export const MARKETPLACE_ABI = [
     type: "function",
   },
   {
-    inputs: [
-      { internalType: "address", name: "nftContract", type: "address" },
-      { internalType: "uint256", name: "tokenId", type: "uint256" },
-    ],
-    name: "buyNFT",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "nftContract", type: "address" },
-      { internalType: "uint256", name: "tokenId", type: "uint256" },
-    ],
-    name: "delistNFT",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [],
-    name: "getCurrentChainId",
+    name: "collectionCreationFee",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
-    name: "getMarketplaceCollections",
+    name: "collectionCreationFeeFlat",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "collections",
+    outputs: [
+      { internalType: "address", name: "contractAddress", type: "address" },
+      { internalType: "address", name: "creator", type: "address" },
+      { internalType: "string", name: "name", type: "string" },
+      { internalType: "string", name: "symbol", type: "string" },
+      { internalType: "string", name: "description", type: "string" },
+      { internalType: "bool", name: "isERC1155", type: "bool" },
+      { internalType: "uint256", name: "createdAt", type: "uint256" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "string", name: "name", type: "string" },
+      { internalType: "string", name: "symbol", type: "string" },
+      { internalType: "string", name: "description", type: "string" },
+      { internalType: "uint256", name: "royaltyPercentage", type: "uint256" },
+    ],
+    name: "createERC1155Collection",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "string", name: "name", type: "string" },
+      { internalType: "string", name: "symbol", type: "string" },
+      { internalType: "string", name: "description", type: "string" },
+      { internalType: "uint256", name: "royaltyPercentage", type: "uint256" },
+    ],
+    name: "createERC721Collection",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getAllCollections",
     outputs: [
       {
         components: [
@@ -308,8 +232,37 @@ export const MARKETPLACE_ABI = [
   },
   {
     inputs: [],
+    name: "getCurrentChainId",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getUSDCAddress",
     outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "user", type: "address" }],
+    name: "getUserCollections",
+    outputs: [
+      {
+        components: [
+          { internalType: "address", name: "contractAddress", type: "address" },
+          { internalType: "address", name: "creator", type: "address" },
+          { internalType: "string", name: "name", type: "string" },
+          { internalType: "string", name: "symbol", type: "string" },
+          { internalType: "string", name: "description", type: "string" },
+          { internalType: "bool", name: "isERC1155", type: "bool" },
+          { internalType: "uint256", name: "createdAt", type: "uint256" },
+        ],
+        internalType: "struct NFTFactory.Collection[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
@@ -322,99 +275,38 @@ export const MARKETPLACE_ABI = [
   },
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "isERC1155",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "nftContract", type: "address" }],
-    name: "isMarketplaceNFT",
+    name: "isMarketplaceCollection",
     outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "address", name: "nftContract", type: "address" },
-      { internalType: "uint256", name: "tokenId", type: "uint256" },
-      { internalType: "uint256", name: "price", type: "uint256" },
+      { internalType: "address", name: "collectionAddress", type: "address" },
+      { internalType: "address", name: "recipient", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
-      { internalType: "bool", name: "_isERC1155", type: "bool" },
-      { internalType: "address", name: "paymentToken", type: "address" },
+      { internalType: "string", name: "tokenUri", type: "string" },
     ],
-    name: "listFactoryNFT",
+    name: "mintNFT1155",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "address", name: "nftContract", type: "address" },
-      { internalType: "uint256", name: "tokenId", type: "uint256" },
-      { internalType: "uint256", name: "price", type: "uint256" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-      { internalType: "bool", name: "_isERC1155", type: "bool" },
-      { internalType: "address", name: "paymentToken", type: "address" },
+      { internalType: "address", name: "collectionAddress", type: "address" },
+      { internalType: "address", name: "recipient", type: "address" },
+      { internalType: "string", name: "tokenUri", type: "string" },
     ],
-    name: "listNFT",
+    name: "mintNFT721",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "", type: "address" },
-      { internalType: "uint256", name: "", type: "uint256" },
-    ],
-    name: "listings",
-    outputs: [
-      { internalType: "address", name: "seller", type: "address" },
-      { internalType: "address", name: "nftContract", type: "address" },
-      { internalType: "uint256", name: "tokenId", type: "uint256" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-      { internalType: "uint256", name: "price", type: "uint256" },
-      { internalType: "bool", name: "isActive", type: "bool" },
-      { internalType: "bool", name: "isERC1155", type: "bool" },
-      { internalType: "address", name: "paymentToken", type: "address" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "nftFactory",
-    outputs: [
-      { internalType: "contract NFTFactory", name: "", type: "address" },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "owner",
     outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "pause",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "paused",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "platformFeePercentage",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
@@ -436,17 +328,8 @@ export const MARKETPLACE_ABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "_nftFactory", type: "address" }],
-    name: "setNFTFactory",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "_feePercentage", type: "uint256" },
-    ],
-    name: "setPlatformFeePercentage",
+    inputs: [{ internalType: "uint256", name: "_feeFlat", type: "uint256" }],
+    name: "setCollectionCreationFee",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -476,13 +359,6 @@ export const MARKETPLACE_ABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "unpause",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     name: "usdcAddresses",
     outputs: [{ internalType: "address", name: "", type: "address" }],
@@ -490,18 +366,18 @@ export const MARKETPLACE_ABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "withdrawETH",
-    outputs: [],
-    stateMutability: "nonpayable",
+    inputs: [
+      { internalType: "address", name: "", type: "address" },
+      { internalType: "uint256", name: "", type: "uint256" },
+    ],
+    name: "userCollections",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [
-      { internalType: "address", name: "token", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-    ],
-    name: "withdrawToken",
+    inputs: [],
+    name: "withdrawETH",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

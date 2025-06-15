@@ -71,6 +71,13 @@ export const CHAIN_CONFIG_ABI = [
   },
   {
     inputs: [],
+    name: "LOCAL_TESTNET",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "SEPOLIA_TESTNET",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
@@ -166,4 +173,4 @@ export const CHAIN_CONFIG_ABI = [
     stateMutability: "view",
     type: "function",
   },
-] as const;
+];
