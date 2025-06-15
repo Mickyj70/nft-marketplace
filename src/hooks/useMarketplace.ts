@@ -215,7 +215,16 @@ export function useMarketplace() {
           abi: MARKETPLACE_ABI,
           functionName: "listings",
           args: [nftContract as `0x${string}`, BigInt(tokenId)],
-        })) as any[];
+        })) as [
+          string,
+          string,
+          bigint,
+          bigint,
+          bigint,
+          boolean,
+          boolean,
+          string
+        ];
 
         const [
           seller,
@@ -236,7 +245,7 @@ export function useMarketplace() {
         });
 
         // Only return active listings with valid price
-        if (isActive && price > 0n) {
+        if (isActive && price > BigInt(0)) {
           const listing: Listing = {
             seller: seller as string,
             nftContract: contractAddr as string,
@@ -273,7 +282,7 @@ export function useMarketplace() {
       nftContract: string,
       tokenId: string,
       price: bigint,
-      amount: bigint = 1n,
+      amount: bigint = BigInt(1),
       isERC1155: boolean = false,
       paymentToken: string = "0x0000000000000000000000000000000000000000"
     ) => {

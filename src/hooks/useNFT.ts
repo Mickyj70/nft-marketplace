@@ -62,7 +62,15 @@ export type NFT = {
 const fetchMetadataWithFallback = async (
   tokenURI: string,
   tokenId: string
-): Promise<any> => {
+): Promise<
+  | {
+      name: string;
+      description: string | undefined;
+      image: string;
+      attributes?: Array<{ trait_type: string; value: string | number }>;
+    }
+  | undefined
+> => {
   const maxRetries = 3;
   const timeout = 10000; // 10 seconds
 
@@ -198,21 +206,21 @@ export function useNFT(tokenAddress: string) {
   const [tokenStandard, setTokenStandard] = useState<string | null>(null);
 
   // Add debugging
-  console.log('useNFT called with:', { tokenAddress, address });
+  console.log("useNFT called with:", { tokenAddress, address });
 
   // Move useReadContract hooks outside of useEffect
   const { data: collectionName, error: nameError } = useReadContract({
     address: tokenAddress as `0x${string}`,
     abi: ERC721_ABI,
     functionName: "name",
-    query: { enabled: !!tokenAddress }
+    query: { enabled: !!tokenAddress },
   });
 
   const { data: collectionSymbol, error: symbolError } = useReadContract({
     address: tokenAddress as `0x${string}`,
     abi: ERC721_ABI,
     functionName: "symbol",
-    query: { enabled: !!tokenAddress }
+    query: { enabled: !!tokenAddress },
   });
 
   const { data: balance, error: balanceError } = useReadContract({
@@ -220,7 +228,7 @@ export function useNFT(tokenAddress: string) {
     abi: ERC721_ABI,
     functionName: "balanceOf",
     args: [address as `0x${string}`],
-    query: { enabled: !!address && !!tokenAddress }
+    query: { enabled: !!address && !!tokenAddress },
   });
 
   const { data: tokenIds, error: tokenIdsError } = useReadContract({
@@ -228,24 +236,24 @@ export function useNFT(tokenAddress: string) {
     abi: ERC721_ABI,
     functionName: "tokensOfOwner",
     args: [address as `0x${string}`],
-    query: { enabled: !!address && !!tokenAddress }
+    query: { enabled: !!address && !!tokenAddress },
   });
 
   // Log contract call results
-  console.log('Contract call results:', {
+  console.log("Contract call results:", {
     collectionName,
     collectionSymbol,
     balance,
     tokenIds,
-    errors: { nameError, symbolError, balanceError, tokenIdsError }
+    errors: { nameError, symbolError, balanceError, tokenIdsError },
   });
 
   useEffect(() => {
     const fetchNFTs = async () => {
-      console.log('fetchNFTs called with:', { address, tokenAddress });
-      
+      console.log("fetchNFTs called with:", { address, tokenAddress });
+
       if (!address || !tokenAddress) {
-        console.log('Missing address or tokenAddress');
+        console.log("Missing address or tokenAddress");
         setNfts([]);
         setIsLoading(false);
         return;
@@ -257,13 +265,19 @@ export function useNFT(tokenAddress: string) {
       try {
         // Check if any of the basic contract calls failed
         if (nameError || symbolError || balanceError) {
-          console.error('Contract call errors:', { nameError, symbolError, balanceError });
-          throw new Error('Failed to read contract data. Contract might not be ERC721 compatible.');
+          console.error("Contract call errors:", {
+            nameError,
+            symbolError,
+            balanceError,
+          });
+          throw new Error(
+            "Failed to read contract data. Contract might not be ERC721 compatible."
+          );
         }
 
         // Detect token standard
         const standard = await detectTokenStandard(tokenAddress);
-        console.log('Detected token standard:', standard);
+        console.log("Detected token standard:", standard);
         setTokenStandard(standard);
 
         if (standard === "ERC1155") {
@@ -277,7 +291,7 @@ export function useNFT(tokenAddress: string) {
             args: [address as `0x${string}`, BigInt(tokenId)],
           });
 
-          console.log('ERC1155 balance for token 1:', balance);
+          console.log("ERC1155 balance for token 1:", balance);
 
           if (balance && Number(balance) > 0) {
             const tokenURI = (await readContract(config, {
@@ -287,15 +301,20 @@ export function useNFT(tokenAddress: string) {
               args: [BigInt(tokenId)],
             })) as string;
 
-            const metadata = await fetchMetadataWithFallback(
+            const metadata = (await fetchMetadataWithFallback(
               tokenURI,
               tokenId.toString()
-            );
+            )) || {
+              name: null,
+              image: null,
+              description: null,
+              attributes: null,
+            };
 
             const nft: NFT = {
               id: tokenId.toString(),
               name: metadata.name || `NFT #${tokenId}`,
-              image: formatImageURL(metadata.image, tokenId.toString()),
+              image: formatImageURL(metadata.image || "", tokenId.toString()),
               description: metadata.description || "",
               tokenAddress,
               tokenId: tokenId.toString(),
@@ -312,13 +331,18 @@ export function useNFT(tokenAddress: string) {
           }
         } else {
           // ERC721 logic
-          console.log('Processing ERC721, balance:', balance, 'tokenIds:', tokenIds);
-          
+          console.log(
+            "Processing ERC721, balance:",
+            balance,
+            "tokenIds:",
+            tokenIds
+          );
+
           if (tokenIdsError) {
-            console.error('TokenIds error:', tokenIdsError);
+            console.error("TokenIds error:", tokenIdsError);
             // Fallback: try to enumerate tokens manually if tokensOfOwner fails
             if (balance && Number(balance) > 0) {
-              console.log('Trying manual enumeration fallback');
+              console.log("Trying manual enumeration fallback");
               // This is a fallback for contracts that don't have tokensOfOwner
               const fallbackNFTs: NFT[] = [];
               for (let i = 0; i < Math.min(Number(balance), 10); i++) {
@@ -326,7 +350,8 @@ export function useNFT(tokenAddress: string) {
                   id: i.toString(),
                   name: `${collectionName || "NFT"} #${i}`,
                   image: `https://via.placeholder.com/300x300/1e88e5/ffffff?text=NFT+${i}`,
-                  description: "NFT from contract without tokensOfOwner function",
+                  description:
+                    "NFT from contract without tokensOfOwner function",
                   tokenAddress,
                   tokenId: i.toString(),
                   attributes: [],
@@ -339,12 +364,14 @@ export function useNFT(tokenAddress: string) {
               setNfts(fallbackNFTs);
               return;
             } else {
-              throw new Error('Contract does not support tokensOfOwner function and balance is 0');
+              throw new Error(
+                "Contract does not support tokensOfOwner function and balance is 0"
+              );
             }
           }
 
           if (!tokenIds || !Array.isArray(tokenIds) || tokenIds.length === 0) {
-            console.log('No tokens found for this address');
+            console.log("No tokens found for this address");
             setNfts([]);
             setIsLoading(false);
             return;
@@ -371,10 +398,15 @@ export function useNFT(tokenAddress: string) {
 
                 console.log(`Token ${tokenId} URI:`, tokenURI);
 
-                const metadata = await fetchMetadataWithFallback(
+                const metadata = (await fetchMetadataWithFallback(
                   tokenURI,
                   tokenId.toString()
-                );
+                )) || {
+                  name: null,
+                  image: null,
+                  description: null,
+                  attributes: null,
+                };
 
                 const nft: NFT = {
                   id: tokenId.toString(),
@@ -382,7 +414,7 @@ export function useNFT(tokenAddress: string) {
                     metadata.name ||
                     `${collectionName || "NFT"} #${tokenId.toString()}`,
                   image: formatImageURL(
-                    metadata.image,
+                    metadata.image || "",
                     tokenId.toString()
                   ),
                   description: metadata.description || "",
@@ -419,18 +451,19 @@ export function useNFT(tokenAddress: string) {
             allNFTs.push(...batchResults);
           }
 
-          console.log('Final NFTs array:', allNFTs);
+          console.log("Final NFTs array:", allNFTs);
           setNfts(allNFTs);
         }
       } catch (error) {
         console.error("Error fetching NFTs:", error);
-        setError(error instanceof Error ? error.message : "Failed to load NFTs");
+        setError(
+          error instanceof Error ? error.message : "Failed to load NFTs"
+        );
         setNfts([]);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchNFTs();
   }, [address, tokenAddress]); // Simplified dependencies
 
@@ -443,6 +476,6 @@ export function useNFT(tokenAddress: string) {
       name: collectionName as string,
       symbol: collectionSymbol as string,
     },
-    tokenStandard
+    tokenStandard,
   };
 }

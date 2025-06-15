@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -32,16 +31,20 @@ export default function AuctionsPage() {
         return !auction.isActive || Number(auction.endTime) <= currentTime;
       }
       // If statusFilter === "all", don't filter by status at all
-      
+
       return true; // Show all auctions regardless of status
     })
     .filter((auction) => {
       // Secondary filter: Payment token and bid filters
       if (filterBy === "eth") {
-        return auction.paymentToken === "0x0000000000000000000000000000000000000000";
+        return (
+          auction.paymentToken === "0x0000000000000000000000000000000000000000"
+        );
       }
       if (filterBy === "usdc") {
-        return auction.paymentToken !== "0x0000000000000000000000000000000000000000";
+        return (
+          auction.paymentToken !== "0x0000000000000000000000000000000000000000"
+        );
       }
       if (filterBy === "no-bids") {
         return auction.highestBid === BigInt(0);
@@ -161,7 +164,9 @@ export default function AuctionsPage() {
             <p className="text-gray-400">
               {isLoadingAllAuctions
                 ? "Loading..."
-                : `${filteredAuctions.length} ${statusFilter === "all" ? "" : statusFilter} auctions`}
+                : `${filteredAuctions.length} ${
+                    statusFilter === "all" ? "" : statusFilter
+                  } auctions`}
             </p>
           </div>
 

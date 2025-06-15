@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { NFTCard } from "@/components/NFTCard";
+import { OwnedNFTCard } from "@/components/OwnedNFTCard";
 import { ConnectFirst } from "@/components/ConnectFirst";
 import { useNFT } from "@/hooks/useNFT";
+import { CONTRACT_ADDRESSES } from "@/config/contracts";
 // import { useMockNFT as useNFT } from "@/hooks/useMockNFT";
 import { useAccount } from "wagmi";
 import { useState } from "react";
@@ -38,24 +39,16 @@ export default function MyNFTsPage() {
           <p className="text-lg mb-8">View and manage your NFT collection</p>
 
           {!isConnected ? (
-            <ConnectFirst message="Connect your wallet to view your NFTs" />
-          ) : error ? (
-            <div className="text-center py-12 bg-red-50 border border-red-200 rounded-lg">
-              <h3 className="text-xl font-medium mb-2 text-red-800">
-                Error Loading NFTs
-              </h3>
-              <p className="mb-4 text-red-600">{error}</p>
-              <button
-                onClick={handleRefresh}
-                className="px-6 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700"
-              >
-                Try Again
-              </button>
-            </div>
+            <ConnectFirst message={""} />
           ) : isLoading ? (
             <div className="text-center py-12">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p>Loading your NFTs...</p>
+              <p className="text-lg">Loading your NFTs...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-lg text-red-500">
+                Error loading NFTs: {error}
+              </p>
             </div>
           ) : nfts.length === 0 ? (
             <div className="text-center py-12 bg-secondary rounded-lg">
@@ -75,10 +68,9 @@ export default function MyNFTsPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {nfts.map((nft) => (
-                <NFTCard
+                <OwnedNFTCard
                   key={`${nft.tokenAddress}-${nft.tokenId}-${refreshKey}`}
                   nft={nft}
-                  type="owned"
                   onAction={handleRefresh}
                 />
               ))}

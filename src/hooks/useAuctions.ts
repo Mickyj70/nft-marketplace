@@ -59,7 +59,7 @@ export function useAuctions() {
 
         console.log("🚀 Loading auctions...");
 
-        let activeAuctions: Auction[] = [];
+        const activeAuctions: Auction[] = [];
         const currentTime = BigInt(Math.floor(Date.now() / 1000));
 
         // Try event-based discovery first
@@ -67,7 +67,7 @@ export function useAuctions() {
           console.log("📡 Attempting auction event-based discovery...");
 
           const currentBlock = await publicClient.getBlockNumber();
-          const fromBlock = currentBlock - 5000n; // Smaller range to avoid RPC limits
+          const fromBlock = currentBlock - BigInt(5000); // Smaller range to avoid RPC limits
 
           console.log(
             `📡 Fetching AuctionCreated events from block ${fromBlock} to ${currentBlock}`
@@ -268,20 +268,37 @@ export function useAuctions() {
     };
 
     // Helper function to check individual auctions
-    const checkAuction = async (nftContract: string, tokenId: string) => {
+    const checkAuction = async (
+      nftContract: string,
+      tokenId: string,
+      currentTime: bigint
+    ) => {
       try {
         console.log(
           `🔍 Checking auction for ${nftContract} token ${tokenId}...`
         );
 
-        const currentTime = BigInt(Math.floor(Date.now() / 1000));
+        // Remove this duplicate line - currentTime is already passed as parameter
+        // const currentTime = BigInt(Math.floor(Date.now() / 1000));
 
         const auctionInfo = (await readContract(config, {
           address: CONTRACT_ADDRESSES.AUCTION as `0x${string}`,
           abi: AUCTION_ABI,
           functionName: "auctions",
           args: [nftContract as `0x${string}`, BigInt(tokenId)],
-        })) as any[];
+        })) as [
+          string,
+          string,
+          bigint,
+          bigint,
+          bigint,
+          bigint,
+          string,
+          bigint,
+          boolean,
+          boolean,
+          string
+        ];
 
         // Array structure from your Auction.sol contract:
         // struct AuctionInfo {
@@ -321,7 +338,7 @@ export function useAuctions() {
         });
 
         // Check if auction exists, is active, and hasn't expired
-        if (isActive && startingPrice > 0n && endTime > currentTime) {
+        if (isActive && startingPrice > BigInt(0) && endTime > currentTime) {
           const auction: Auction = {
             seller: seller as string,
             nftContract: contractAddr as string,
@@ -343,7 +360,7 @@ export function useAuctions() {
         } else {
           if (!isActive) {
             console.log(`❌ Auction not active: ${nftContract}-${tokenId}`);
-          } else if (startingPrice === 0n) {
+          } else if (startingPrice === BigInt(0)) {
             console.log(`❌ No starting price: ${nftContract}-${tokenId}`);
           } else if (endTime <= currentTime) {
             console.log(
@@ -370,7 +387,7 @@ export function useAuctions() {
       tokenId: string,
       startingPrice: bigint,
       duration: bigint,
-      amount: bigint = 1n,
+      amount: bigint = BigInt(1),
       isERC1155: boolean = false,
       paymentToken: string = "0x0000000000000000000000000000000000000000"
     ) => {

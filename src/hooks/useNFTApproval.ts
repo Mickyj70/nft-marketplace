@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useWriteContract, useReadContract } from "wagmi";
-import { CONTRACT_ADDRESSES } from "@/config/contracts";
+// import { CONTRACT_ADDRESSES } from "@/config/contracts";
 
 const ERC721_APPROVAL_ABI = [
   {
@@ -44,7 +45,11 @@ const ERC721_APPROVAL_ABI = [
 export function useNFTApproval() {
   const { writeContract, isPending } = useWriteContract();
 
-  const approveNFT = (nftContract: string, tokenId: string, operator: string) => {
+  const approveNFT = (
+    nftContract: string,
+    tokenId: string,
+    operator: string
+  ) => {
     writeContract({
       address: nftContract as `0x${string}`,
       abi: ERC721_APPROVAL_ABI,
@@ -53,7 +58,11 @@ export function useNFTApproval() {
     });
   };
 
-  const setApprovalForAll = (nftContract: string, operator: string, approved: boolean) => {
+  const setApprovalForAll = (
+    nftContract: string,
+    operator: string,
+    approved: boolean
+  ) => {
     writeContract({
       address: nftContract as `0x${string}`,
       abi: ERC721_APPROVAL_ABI,

@@ -37,7 +37,7 @@ export function AuctionCard({ auction }: AuctionCardProps) {
   const isETH =
     auction.paymentToken === "0x0000000000000000000000000000000000000000";
   const currentPrice =
-    auction.highestBid > 0n ? auction.highestBid : auction.startingPrice;
+    auction.highestBid > BigInt(0) ? auction.highestBid : auction.startingPrice;
   const timeLeft = Number(auction.endTime) - Math.floor(Date.now() / 1000);
   const isExpired = timeLeft <= 0;
 
@@ -104,7 +104,9 @@ export function AuctionCard({ auction }: AuctionCardProps) {
           {/* Current Price */}
           <div className="mb-4">
             <p className="text-sm text-gray-400 mb-1">
-              {auction.highestBid > 0n ? "Current Bid" : "Starting Price"}
+              {auction.highestBid > BigInt(0)
+                ? "Current Bid"
+                : "Starting Price"}
             </p>
             <p className="text-xl font-bold flex items-center gap-2">
               {formatEther(currentPrice)} {isETH ? "ETH" : "USDC"}
@@ -197,7 +199,10 @@ export function AuctionCard({ auction }: AuctionCardProps) {
             <div className="mb-4">
               <p className="text-sm text-gray-400 mb-2">
                 Current{" "}
-                {auction.highestBid > 0n ? "highest bid" : "starting price"}:
+                {auction.highestBid > BigInt(0)
+                  ? "highest bid"
+                  : "starting price"}
+                :
               </p>
               <p className="text-lg font-bold">
                 {formatEther(currentPrice)} {isETH ? "ETH" : "USDC"}
@@ -218,7 +223,7 @@ export function AuctionCard({ auction }: AuctionCardProps) {
               />
               <p className="text-xs text-gray-400 mt-1">
                 Must be higher than current{" "}
-                {auction.highestBid > 0n ? "bid" : "starting price"}
+                {auction.highestBid > BigInt(0) ? "bid" : "starting price"}
               </p>
             </div>
 

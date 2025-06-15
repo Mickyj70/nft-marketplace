@@ -80,7 +80,19 @@ export function useAuctions() {
               abi: AUCTION_ABI,
               functionName: "auctions",
               args: [nft.contract as `0x${string}`, BigInt(nft.tokenId)],
-            })) as any[];
+            })) as [
+              string,
+              string,
+              bigint,
+              bigint,
+              bigint,
+              bigint,
+              string,
+              bigint,
+              boolean,
+              boolean,
+              string
+            ];
 
             console.log(
               `📋 Auction info for ${nft.contract}-${nft.tokenId}:`,
@@ -130,7 +142,7 @@ export function useAuctions() {
             });
 
             // Check if auction exists and is active
-            if (isActive && startingPrice > 0n) {
+            if (isActive && startingPrice > BigInt(0)) {
               const currentTime = BigInt(Math.floor(Date.now() / 1000));
               const isNotExpired = endTime > currentTime;
 
@@ -193,7 +205,7 @@ export function useAuctions() {
       tokenId: string,
       startingPrice: bigint,
       duration: bigint,
-      amount: bigint = 1n,
+      amount: bigint = BigInt(1),
       isERC1155: boolean = false,
       paymentToken: string = "0x0000000000000000000000000000000000000000"
     ) => {
