@@ -1,6 +1,7 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { sepolia } from "wagmi/chains";
 import { http } from "wagmi";
+import { metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 
 export const config = getDefaultConfig({
   appName: "META MINT NFT Marketplace",
@@ -12,4 +13,14 @@ export const config = getDefaultConfig({
     [sepolia.id]: http(),
   },
   ssr: true,
+  // Add explicit wallet configuration for better mobile support
+  wallets: [
+    {
+      groupName: 'Recommended',
+      wallets: [
+        metaMaskWallet,
+        walletConnectWallet,
+      ],
+    },
+  ],
 });

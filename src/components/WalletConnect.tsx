@@ -1,20 +1,57 @@
 "use client";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export function WalletConnect() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+      setIsMobile(
+        window.innerWidth <= 768 ||
+          /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          )
+      );
     };
-    
+
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Mobile-specific connection handler
+  const handleMobileConnect = () => {
+    if (isMobile && typeof window !== "undefined") {
+      // Try to detect MetaMask mobile app
+      const isMetaMaskInstalled =
+        typeof window.ethereum !== "undefined" && window.ethereum.isMetaMask;
+
+      if (isMetaMaskInstalled) {
+        // Direct connection attempt for mobile MetaMask
+        window.ethereum
+          .request({ method: "eth_requestAccounts" })
+          .catch((error: Error) => {
+            console.log("MetaMask connection failed:", error);
+          });
+      } else {
+        // Fallback to app store or deep link
+        const userAgent = navigator.userAgent.toLowerCase();
+        if (userAgent.includes("android")) {
+          window.open(
+            "https://play.google.com/store/apps/details?id=io.metamask",
+            "_blank"
+          );
+        } else if (userAgent.includes("iphone") || userAgent.includes("ipad")) {
+          window.open(
+            "https://apps.apple.com/app/metamask/id1438144202",
+            "_blank"
+          );
+        }
+      }
+    }
+  };
 
   return (
     <ConnectButton.Custom>
@@ -37,11 +74,11 @@ export function WalletConnect() {
         return (
           <div
             {...(!ready && {
-              'aria-hidden': true,
-              'style': {
+              "aria-hidden": true,
+              style: {
                 opacity: 0,
-                pointerEvents: 'none',
-                userSelect: 'none',
+                pointerEvents: "none",
+                userSelect: "none",
               },
             })}
           >
@@ -49,16 +86,15 @@ export function WalletConnect() {
               if (!connected) {
                 return (
                   <button
-                    onClick={openConnectModal}
+                    onClick={isMobile ? handleMobileConnect : openConnectModal}
                     type="button"
                     className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                    // Enhanced mobile support
                     style={{
-                      minHeight: isMobile ? '44px' : 'auto',
-                      fontSize: isMobile ? '16px' : '14px',
+                      minHeight: isMobile ? "44px" : "auto",
+                      fontSize: isMobile ? "16px" : "14px",
                     }}
                   >
-                    {isMobile ? 'Connect' : 'Connect Wallet'}
+                    {isMobile ? "Connect" : "Connect Wallet"}
                   </button>
                 );
               }
@@ -85,7 +121,7 @@ export function WalletConnect() {
                       <div className="w-4 h-4">
                         {chain.iconUrl && (
                           <Image
-                            alt={chain.name ?? 'Chain icon'}
+                            alt={chain.name ?? "Chain icon"}
                             src={chain.iconUrl}
                             width={16}
                             height={16}
@@ -100,10 +136,9 @@ export function WalletConnect() {
                     onClick={openAccountModal}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-lg transition-colors"
                   >
-                    {isMobile 
-                      ? `${account.displayName?.slice(0, 6)}...` 
-                      : account.displayName
-                    }
+                    {isMobile
+                      ? `${account.displayName?.slice(0, 6)}...`
+                      : account.displayName}
                   </button>
                 </div>
               );
